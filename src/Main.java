@@ -153,7 +153,16 @@ public class Main {
                 e.printStackTrace();
             }
         } else if (wahl == 'b'){
-            String query = String.format("insert into dbsys38.buchung values(%l)");
+            maxBN++;
+            String query = String.format("insert into dbsys38.buchung values('%l', to_date(%s), to_date(%s), null, %s, null," +
+                    "null,null, null, null, %s )", maxBN, params[2], params[2] + params[3], params[1], params[0]);
+
+            ResultSet result = null;
+            try  {
+                result =stmt.executeQuery(query);
+            } catch (SQLException e){
+                e.printStackTrace();
+            }
         } else if (wahl == 'n'){
             String query = String.format("select max(buchungsnr) as max from dbsys38.buchung");
             ResultSet result = null;
