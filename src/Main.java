@@ -14,10 +14,7 @@ public class Main {
             "\n" +
             "oder optional mit Ausstattung:\n" +
             "Spanien,3,'1.1.2000','3.3.2000',Sauna\n" +
-            "[Land],[Anz.Zimmer],[Anreise],[Abreise],[Ausstattung]";
-
-    //static String[] options = {"-la [land]", "-zi [mindestanzahl zimmer]", "-an [anreisetermin]", "-ab [abreisetermin]", "-au [ausstattung]"};
-
+            "[Land],[Mind.Anz.Zimmer],[Anreise],[Abreise],[Ausstattung enthält]";
 
     public static void main(String[] args) {
 
@@ -49,11 +46,13 @@ public class Main {
             if (split.length > i) abrei = split[i++];
             if (split.length > i) ausst = split[i++];
 
+            System.out.println("OK - wir suchen nach Wohnungen mit folgenden Kriterien:");
             System.out.println("Land: " + land);
             System.out.println("Anzahl Zimmer: " + anzzi);
             System.out.println("Anreise: " + anrei);
             System.out.println("Abreise: " + abrei);
             System.out.println("Ausstattung: " + ausst);
+            System.out.println("");
 
             query(split);
 
@@ -65,12 +64,11 @@ public class Main {
     }
 
     private static void query(String[] params) {
-
         String query = String.format("Select NAMEL, ANZAHLZIMMER " +
-                "FROM dbsys38.FERIENWOHNUNG WHERE NAMEL = '%s' " +
-                "and ANZAHLZIMMER >= '%s'", params[0], params[1]);
+                    "FROM dbsys38.FERIENWOHNUNG WHERE NAMEL = '%s' " +
+                    "and ANZAHLZIMMER >= '%s'", params[0], params[1]);
 
-        System.out.println("Debug: " + query);
+        System.out.println("Generierter SQL query: " + query);
 
 
         ResultSet result = null;
@@ -81,12 +79,8 @@ public class Main {
             while (result.next()) {
                 String land = result.getString("namel");
                 String anzzi = result.getString("ANZAHLZIMMER");
-                /*
-                String anrei = result.getString("namel");
-                String abrei = result.getString("namel");
-                String ausst = result.getString("namel");
-                */
-                System.out.printf("--- Ergebnis %d: ---\n", count++);
+
+                System.out.printf("--- Ergebnis %d: ---\n", ++count);
                 System.out.println("Land: " + land);
                 System.out.println("Anzahl Zimmer: " + anzzi);
                 System.out.println("");
@@ -99,7 +93,6 @@ public class Main {
     private static String getInput() {
         Scanner in = new Scanner(System.in);
         String input = in.next().trim();
-        System.out.println("Debug: Input received: " + input);
         return input;
     }
 
