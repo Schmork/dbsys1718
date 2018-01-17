@@ -6,6 +6,7 @@ public class Main {
     static String passwd = "geheim";
     static Connection conn = null;
     static Statement stmt = null;
+    static long maxBN = 0;
 
     // for displaying the menu
     static String welcome = "Hallo! Die Abfrage von Ferienwohnungen muss folgendem Format folgen: \n" +
@@ -16,6 +17,9 @@ public class Main {
             "Spanien,3,'1.1.2000','3.3.2000',Sauna\n" +
             "[Land],[Anz.Zimmer],[Anreise],[Abreise],[Ausstattung]";
 
+    static String buchen = "Zum Buchen Ihre Daten bitte im folgendem Format eingeben:\n" +
+            "email,Name der Ferienwohnung, Anreisedatum, Anzahl der Tage";
+
     //static String[] options = {"-la [land]", "-zi [mindestanzahl zimmer]", "-an [anreisetermin]", "-ab [abreisetermin]", "-au [ausstattung]"};
 
 
@@ -23,16 +27,67 @@ public class Main {
 
         init();
         openCon();
+        getMaxBN();
         loop();
         closeCon();
 
         //testQuery();
     }
 
+    private static void getMaxBN() {
+        String[] dummy = {};
+        query(dummy, 'n');
+    }
+
     private static void loop() {
-        while(true) {
+        while (true) {
+
+            char wahl = displayMenu();
+            if (wahl == 's') {
+                String input = getInput();
+
+
+                String[] split = input.split(",");
+
+                String land = "";
+                String anzzi = "";
+                String anrei = "";
+                String abrei = "";
+                String ausst = "";
+
+                int i = 0;
+                if (split.length > i) land = split[i++];
+                if (split.length > i) anzzi = split[i++];
+                if (split.length > i) anrei = split[i++];
+                if (split.length > i) abrei = split[i++];
+                if (split.length > i) ausst = split[i++];
+
+                System.out.println("Land: " + land);
+                System.out.println("Anzahl Zimmer: " + anzzi);
+                System.out.println("Anreise: " + anrei);
+                System.out.println("Abreise: " + abrei);
+                System.out.println("Ausstattung: " + ausst);
+
+                query(split, 's');
+
+                //Teststring:
+                //  Spanien,3,'1.1.2000','3.3.2000'
+
+                if (input.equals("q")) return;
+            } else if (wahl == 'b'){
+                String input = getInput();
+                String[] split = input.split(",");
+                if (split.length != 4){
+                    System.out.println("Fehlende Angaben");
+                } else {
+                    query(split, 'b');
+                }
+
+            }
+            /*
             displayMenu();
             String input = getInput();
+
 
             String[] split = input.split(",");
 
@@ -61,38 +116,58 @@ public class Main {
             //  Spanien,3,'1.1.2000','3.3.2000'
 
             if (input.equals("q")) return;
+            */
         }
+
     }
 
-    private static void query(String[] params) {
+    private static void query(String[] params, char wahl) {
+        if (wahl == 's') {
 
-        String query = String.format("Select NAMEL, ANZAHLZIMMER " +
-                "FROM dbsys38.FERIENWOHNUNG WHERE NAMEL = '%s' " +
-                "and ANZAHLZIMMER >= '%s'", params[0], params[1]);
+            String query = String.format("Select NAMEL, ANZAHLZIMMER " +
+                    "FROM dbsys38.FERIENWOHNUNG WHERE NAMEL = '%s' " +
+                    "and ANZAHLZIMMER >= '%s'", params[0], params[1]);
 
-        System.out.println("Debug: " + query);
+            System.out.println("Debug: " + query);
 
 
-        ResultSet result = null;
-        try {
-            result = stmt.executeQuery(query);
+            ResultSet result = null;
+            try {
+                result = stmt.executeQuery(query);
 
-            int count = 0;
-            while (result.next()) {
-                String land = result.getString("namel");
-                String anzzi = result.getString("ANZAHLZIMMER");
+                int count = 0;
+                while (result.next()) {
+                    String land = result.getString("namel");
+                    String anzzi = result.getString("ANZAHLZIMMER");
                 /*
                 String anrei = result.getString("namel");
                 String abrei = result.getString("namel");
                 String ausst = result.getString("namel");
                 */
-                System.out.printf("--- Ergebnis %d: ---\n", count++);
-                System.out.println("Land: " + land);
-                System.out.println("Anzahl Zimmer: " + anzzi);
-                System.out.println("");
+                    System.out.printf("--- Ergebnis %d: ---\n", count++);
+                    System.out.println("Land: " + land);
+                    System.out.println("Anzahl Zimmer: " + anzzi);
+                    System.out.println("");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } else if (wahl == 'b'){
+            String query = String.format("insert into dbsys38.buchung values(%l)");
+        } else if (wahl == 'n'){
+            String query = String.format("select max(buchungsnr) as max from dbsys38.buchung");
+            ResultSet result = null;
+            try {
+                result = stmt.executeQuery(query);
+                while (result.next()) {
+                    String maxbn = result.getString("max");
+                    maxBN = Long.parseLong(maxbn);
+                }
+            } catch (SQLException e){
+                e.printStackTrace();
+            }
+
+
         }
     }
 
@@ -171,13 +246,23 @@ public class Main {
         }
     }
 
-    static void displayMenu() {
-        System.out.println(welcome);
+    static char displayMenu(){
+        System.out.println("Ferien wohnung suchen: s");
+        System.out.println("Ferien wohnung buchen: b");
+        String input = getInput();
+        if (input.equals("s")) {
+            System.out.println(welcome);
+            return 's';
+        } else if (input.equals("b")){
+            System.out.println(buchen);
+            return 'b';
+        }
         /*
         for (String option : options) {
             System.out.println(option);
         }
         */
         System.out.println("");
+        return 'x';
     }
 }
