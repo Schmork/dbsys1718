@@ -20,11 +20,10 @@ public class Main {
             "[Land],[Anz.Zimmer],[Anreise],[Abreise],[Ausstattung]";
 
     static String buchen = "Zum Buchen Ihre Daten bitte im folgendem Format eingeben:\n" +
-            "Siegmund.Döring@gmx.de,Haus Peter,01/01/1990,01/01/1999\n" +
+            "siegmund.döring@gmx.de,Haus Peter,01/01/1990,01/01/1999\n" +
             "[email], [Name der Ferienwohnung], [Anreisedatum], [Abreisedatum]";
 
     public static void main(String[] args) throws IOException {
-
         init();
         openCon();
         loop();
@@ -138,6 +137,8 @@ public class Main {
         System.out.println("debug query: " + query);
         try {
             stmt.executeUpdate(query);
+            conn.commit();
+            System.out.println("Buchung wurde der Datenbank erfolgreich hinzugefügt.");
         } catch (SQLException e) {
             e.printStackTrace();
         }
