@@ -124,10 +124,17 @@ public class Main {
     private static void query(String[] params, char wahl) {
         if (wahl == 's') {
 
-            String query = String.format("Select NAMEL, ANZAHLZIMMER " +
+            /*String query = String.format("Select NAMEL, ANZAHLZIMMER " +
                     "FROM dbsys38.FERIENWOHNUNG WHERE NAMEL = '%s' " +
                     "and ANZAHLZIMMER >= '%s'", params[0], params[1]);
+            */
 
+            String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
+                            "FROM dbsys38.Ferienwohnung, dbsys38.Beinhaltet " +
+                            "WHERE Ferienwohnung.NameL = 'Spanien' " +
+                            "AND Anzahlzimmer >= 2 " +
+                            "AND Beinhaltet.NameF = Ferienwohnung.NameF " +
+                            "AND Beinhaltet.Art = 'Sauna'");
             System.out.println("Debug: " + query);
 
 
@@ -137,15 +144,11 @@ public class Main {
 
                 int count = 0;
                 while (result.next()) {
-                    String land = result.getString("namel");
-                    String anzzi = result.getString("ANZAHLZIMMER");
-                /*
-                String anrei = result.getString("namel");
-                String abrei = result.getString("namel");
-                String ausst = result.getString("namel");
-                */
+                    String nameF = result.getString("NameF");
+                    String anzzi = result.getString("Anzahlzimmer");
+
                     System.out.printf("--- Ergebnis %d: ---\n", count++);
-                    System.out.println("Land: " + land);
+                    System.out.println("Name: " + nameF);
                     System.out.println("Anzahl Zimmer: " + anzzi);
                     System.out.println("");
                 }
