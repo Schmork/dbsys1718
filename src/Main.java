@@ -119,6 +119,7 @@ public class Main {
             System.out.println("debug query: " + query);
             try {
                 stmt.executeUpdate(query);
+                conn.commit();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -199,6 +200,7 @@ public class Main {
             return 's';
         } else if (input.equals("b")) {
             System.out.println(buchen);
+            System.out.println("TestString: siegmund.döring@gmx.de,Haus Peter, 01/06/1996, 05/06/1996");
             return 'b';
         } else if (input.equals("x")) {
             return 'x';
