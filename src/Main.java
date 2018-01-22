@@ -1,5 +1,8 @@
 import java.util.Scanner;
 import java.sql.*;
+import java.io.*;
+
+import static java.lang.System.exit;
 
 public class Main {
     static String name = "dbsys49";
@@ -18,28 +21,28 @@ public class Main {
             "[Land],[Anz.Zimmer],[Anreise],[Abreise],[Ausstattung]";
 
     static String buchen = "Zum Buchen Ihre Daten bitte im folgendem Format eingeben:\n" +
-            "email,Name der Ferienwohnung, Anreisedatum, Anzahl der Tage";
+            "email,Name der Ferienwohnung, Anreisedatum, Abreisedatum";
 
     //static String[] options = {"-la [land]", "-zi [mindestanzahl zimmer]", "-an [anreisetermin]", "-ab [abreisetermin]", "-au [ausstattung]"};
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         init();
         openCon();
-        getMaxBN();
         loop();
         closeCon();
 
         //testQuery();
     }
 
-    private static void getMaxBN() {
+    private static long getMaxBN() {
         String[] dummy = {};
         query(dummy, 'n');
+        return maxBN;
     }
 
-    private static void loop() {
+    private static void loop() throws IOException {
         while (true) {
 
             char wahl = displayMenu();
@@ -70,64 +73,26 @@ public class Main {
 
                 query(split, 's');
 
-                //Teststring:
-                //  Spanien,3,'1.1.2000','3.3.2000'
-
                 if (input.equals("q")) return;
-            } else if (wahl == 'b'){
+            } else if (wahl == 'b') {
                 String input = getInput();
                 String[] split = input.split(",");
-                if (split.length != 4){
+                System.out.println(split.length);
+                if (split.length != 4) {
                     System.out.println("Fehlende Angaben");
                 } else {
                     query(split, 'b');
                 }
 
+            } else if (wahl == 'x') {
+                exit(0);
             }
-            /*
-            displayMenu();
-            String input = getInput();
-
-
-            String[] split = input.split(",");
-
-            String land = "";
-            String anzzi = "";
-            String anrei = "";
-            String abrei = "";
-            String ausst = "";
-
-            int i = 0;
-            if (split.length > i) land = split[i++];
-            if (split.length > i) anzzi = split[i++];
-            if (split.length > i) anrei = split[i++];
-            if (split.length > i) abrei = split[i++];
-            if (split.length > i) ausst = split[i++];
-
-            System.out.println("Land: " + land);
-            System.out.println("Anzahl Zimmer: " + anzzi);
-            System.out.println("Anreise: " + anrei);
-            System.out.println("Abreise: " + abrei);
-            System.out.println("Ausstattung: " + ausst);
-
-            query(split);
-
-            //Teststring:
-            //  Spanien,3,'1.1.2000','3.3.2000'
-
-            if (input.equals("q")) return;
-            */
         }
 
     }
 
     private static void query(String[] params, char wahl) {
         if (wahl == 's') {
-
-            /*String query = String.format("Select NAMEL, ANZAHLZIMMER " +
-                    "FROM dbsys38.FERIENWOHNUNG WHERE NAMEL = '%s' " +
-                    "and ANZAHLZIMMER >= '%s'", params[0], params[1]);
-            */
 
             String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
                             "FROM dbsys38.Ferienwohnung, dbsys38.Beinhaltet " +
@@ -136,7 +101,6 @@ public class Main {
                             "AND Beinhaltet.NameF = Ferienwohnung.NameF " +
                             "AND Beinhaltet.Art = 'Sauna'");
             System.out.println("Debug: " + query);
-
 
             ResultSet result = null;
             try {
@@ -155,18 +119,19 @@ public class Main {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        } else if (wahl == 'b'){
+        } else if (wahl == 'b') {
             maxBN++;
-            String query = String.format("insert into dbsys38.buchung values('%l', to_date(%s), to_date(%s), null, %s, null," +
-                    "null,null, null, null, %s )", maxBN, params[2], params[2] + params[3], params[1], params[0]);
-
-            ResultSet result = null;
-            try  {
-                result =stmt.executeQuery(query);
-            } catch (SQLException e){
+            String query = String.format("insert into dbsys38.buchung(buchungsnr, email, namef, anreisedatum, abreisedatum) " +
+                    "values(%d, '%s', '%s', to_date('%s'), to_date('%s'))", getMaxBN() + 1, params[0], params[1], params[2], params[3]);
+            System.out.println("debug query: " + query);
+            try {
+                stmt.executeUpdate(query);
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
-        } else if (wahl == 'n'){
+
+
+        } else if (wahl == 'n') {
             String query = String.format("select max(buchungsnr) as max from dbsys38.buchung");
             ResultSet result = null;
             try {
@@ -175,7 +140,7 @@ public class Main {
                     String maxbn = result.getString("max");
                     maxBN = Long.parseLong(maxbn);
                 }
-            } catch (SQLException e){
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
 
@@ -183,10 +148,10 @@ public class Main {
         }
     }
 
-    private static String getInput() {
-        Scanner in = new Scanner(System.in);
-        String input = in.next().trim();
-        System.out.println("Debug: Input received: " + input);
+    private static String getInput() throws IOException {
+        InputStreamReader isr = new InputStreamReader(System.in);
+        BufferedReader br = new BufferedReader(isr);
+        String input = br.readLine();
         return input;
     }
 
@@ -219,7 +184,7 @@ public class Main {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            System.exit(-1);
+            exit(-1);
         }
     }
 
@@ -258,16 +223,19 @@ public class Main {
         }
     }
 
-    static char displayMenu(){
+    static char displayMenu() throws IOException {
         System.out.println("Ferien wohnung suchen: s");
         System.out.println("Ferien wohnung buchen: b");
+        System.out.println("Beenden: x");
         String input = getInput();
         if (input.equals("s")) {
             System.out.println(welcome);
             return 's';
-        } else if (input.equals("b")){
+        } else if (input.equals("b")) {
             System.out.println(buchen);
             return 'b';
+        } else if (input.equals("x")) {
+            return 'x';
         }
         /*
         for (String option : options) {
@@ -275,6 +243,6 @@ public class Main {
         }
         */
         System.out.println("");
-        return 'x';
+        return 'y';
     }
 }
