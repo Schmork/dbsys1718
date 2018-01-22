@@ -1,4 +1,3 @@
-import java.util.Scanner;
 import java.sql.*;
 import java.io.*;
 
@@ -23,17 +22,12 @@ public class Main {
     static String buchen = "Zum Buchen Ihre Daten bitte im folgendem Format eingeben:\n" +
             "email,Name der Ferienwohnung, Anreisedatum, Abreisedatum";
 
-    //static String[] options = {"-la [land]", "-zi [mindestanzahl zimmer]", "-an [anreisetermin]", "-ab [abreisetermin]", "-au [ausstattung]"};
-
-
     public static void main(String[] args) throws IOException {
 
         init();
         openCon();
         loop();
         closeCon();
-
-        //testQuery();
     }
 
     private static long getMaxBN() {
@@ -48,7 +42,6 @@ public class Main {
             char wahl = displayMenu();
             if (wahl == 's') {
                 String input = getInput();
-
 
                 String[] split = input.split(",");
 
@@ -143,8 +136,6 @@ public class Main {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
-
         }
     }
 
@@ -198,31 +189,6 @@ public class Main {
         }
     }
 
-    static void testQuery() {
-        // INSERT-Query
-        StringBuilder sb = new StringBuilder();
-        //sb.append("SELECT namef FROM DBSYS38.FERIENWOHNUNG");
-
-        sb.append("Select NAMEL, count(ANZAHLZIMMER) FROM dbsys38.FERIENWOHNUNG WHERE NAMEL = 'Spanien' and ANZAHLZIMMER >='3' group by namel");
-
-        // Query ausführen - einfügen
-        String query = sb.toString();
-
-        // ############ EINFÜGEN ###########
-        //stmt.executeUpdate(myInsertQuery);
-
-        ResultSet result = null;
-        try {
-            result = stmt.executeQuery(query);
-
-            while (result.next()) {
-                System.out.println(result.getString("namel"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     static char displayMenu() throws IOException {
         System.out.println("Ferien wohnung suchen: s");
         System.out.println("Ferien wohnung buchen: b");
@@ -237,11 +203,6 @@ public class Main {
         } else if (input.equals("x")) {
             return 'x';
         }
-        /*
-        for (String option : options) {
-            System.out.println(option);
-        }
-        */
         System.out.println("");
         return 'y';
     }
