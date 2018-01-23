@@ -93,20 +93,24 @@ public class Main {
     }
 
     private static void suchen(String[] params) {
-        String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
-                "FROM dbsys38.Ferienwohnung ");
-                if (params.length == 5) {
-                    query += String.format(",dbsys38.Beinhaltet");
-                }
-                query += String.format("WHERE Ferienwohnung.NameF IN (SELECT BUCHUNG.NameF FROM dbsys38.Buchung " +
+
+        String fromBeinhaltet = "";
+        String checkBeinhaltet = "";
+
+        if (params.length == 5) {
+            fromBeinhaltet = ", dbsys38.Beinhaltet ";
+            checkBeinhaltet = String.format("AND Beinhaltet.NameF = Ferienwohnung.NameF " +
+                                            "AND Beinhaltet.Art = '%s'", params[4]);
+        }
+
+        String query = "SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
+                        "FROM dbsys38.Ferienwohnung " + fromBeinhaltet;
+        query += String.format("WHERE Ferienwohnung.NameF IN (SELECT BUCHUNG.NameF FROM dbsys38.Buchung " +
                         "WHERE Buchung.Anreisedatum NOT BETWEEN TO_DATE(%s) AND TO_DATE(%s) " +
                         "AND Buchung.Abreisedatum NOT BETWEEN TO_DATE(%s) AND TO_DATE(%s)) " +
                         "AND Ferienwohnung.NameL = '%s' " +
                         "AND Anzahlzimmer >= '%s' ", params[2], params[3], params[2], params[3], params[0], params[1]);
-                if (params.length == 5) {
-                    query += String.format("AND Beinhaltet.NameF = Ferienwohnung.NameF " +
-                            "AND Beinhaltet.Art = '%s'", params[4]);
-                }
+        query += checkBeinhaltet;
         System.out.println("Debug: " + query);
 
 /*
