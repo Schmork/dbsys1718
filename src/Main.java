@@ -20,10 +20,10 @@ public class Main {
             "[Land],[Anz.Zimmer],[Anreise],[Abreise],[Ausstattung]";
 
     static String buchen = "Zum Buchen Ihre Daten bitte im folgendem Format eingeben:\n" +
-            "email,Name der Ferienwohnung, Anreisedatum, Abreisedatum";
+            "siegmund.döring@gmx.de,Haus Peter,01/01/1990,01/01/1999\n" +
+            "[email], [Name der Ferienwohnung], [Anreisedatum], [Abreisedatum]";
 
     public static void main(String[] args) throws IOException {
-
         init();
         openCon();
         loop();
@@ -70,9 +70,9 @@ public class Main {
             } else if (wahl == 'b') {
                 String input = getInput();
                 String[] split = input.split(",");
-                System.out.println(split.length);
+                System.out.println("Anzahl Parameter: " + split.length);
                 if (split.length != 4) {
-                    System.out.println("Fehlende Angaben");
+                    System.out.println("Erwarte genau 4 Parameter");
                 } else {
                     query(split, 'b');
                 }
@@ -85,45 +85,11 @@ public class Main {
     }
 
     private static void query(String[] params, char wahl) {
+
         if (wahl == 's') {
-
-            String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
-                            "FROM dbsys38.Ferienwohnung, dbsys38.Beinhaltet " +
-                            "WHERE Ferienwohnung.NameL = 'Spanien' " +
-                            "AND Anzahlzimmer >= 2 " +
-                            "AND Beinhaltet.NameF = Ferienwohnung.NameF " +
-                            "AND Beinhaltet.Art = 'Sauna'");
-            System.out.println("Debug: " + query);
-
-            ResultSet result = null;
-            try {
-                result = stmt.executeQuery(query);
-
-                int count = 0;
-                while (result.next()) {
-                    String nameF = result.getString("NameF");
-                    String anzzi = result.getString("Anzahlzimmer");
-
-                    System.out.printf("--- Ergebnis %d: ---\n", count++);
-                    System.out.println("Name: " + nameF);
-                    System.out.println("Anzahl Zimmer: " + anzzi);
-                    System.out.println("");
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            suchen();
         } else if (wahl == 'b') {
-            maxBN++;
-            String query = String.format("insert into dbsys38.buchung(buchungsnr, email, namef, anreisedatum, abreisedatum) " +
-                    "values(%d, '%s', '%s', to_date('%s'), to_date('%s'))", getMaxBN() + 1, params[0], params[1], params[2], params[3]);
-            System.out.println("debug query: " + query);
-            try {
-                stmt.executeUpdate(query);
-                conn.commit();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
+            buchen(params);
 
         } else if (wahl == 'n') {
             String query = String.format("select max(buchungsnr) as max from dbsys38.buchung");
@@ -137,6 +103,48 @@ public class Main {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private static void suchen() {
+        String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
+                "FROM dbsys38.Ferienwohnung, dbsys38.Beinhaltet " +
+                "WHERE Ferienwohnung.NameL = 'Spanien' " +
+                "AND Anzahlzimmer >= 2 " +
+                "AND Beinhaltet.NameF = Ferienwohnung.NameF " +
+                "AND Beinhaltet.Art = 'Sauna'");
+        System.out.println("Debug: " + query);
+
+        ResultSet result = null;
+        try {
+            result = stmt.executeQuery(query);
+
+            int count = 0;
+            while (result.next()) {
+                String nameF = result.getString("NameF");
+                String anzzi = result.getString("Anzahlzimmer");
+
+                System.out.printf("--- Ergebnis %d: ---\n", count++);
+                System.out.println("Name: " + nameF);
+                System.out.println("Anzahl Zimmer: " + anzzi);
+                System.out.println("");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void buchen(String[] params) {
+        maxBN++;
+        String query = String.format("insert into dbsys38.buchung(buchungsnr, email, namef, anreisedatum, abreisedatum) " +
+                "values(%d, '%s', '%s', to_date('%s'), to_date('%s'))", getMaxBN() + 1, params[0], params[1], params[2], params[3]);
+        System.out.println("debug query: " + query);
+        try {
+            stmt.executeUpdate(query);
+            conn.commit();
+            System.out.println("Buchung wurde der Datenbank erfolgreich hinzugefügt.");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -168,6 +176,7 @@ public class Main {
 
             conn.setAutoCommit(false);
             stmt = conn.createStatement();
+            stmt.executeUpdate("ALTER SESSION SET nls_date_format = 'DD.MM.YYYY'");
         } catch (SQLException se) {
             System.out.println("SQL Exception occurred while establishing connection to DBS: \n"
                     + se.getMessage());
