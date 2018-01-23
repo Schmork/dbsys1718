@@ -87,7 +87,7 @@ public class Main {
     private static void query(String[] params, char wahl) {
 
         if (wahl == 's') {
-            suchen();
+            suchen(params);
         } else if (wahl == 'b') {
             buchen(params);
 
@@ -106,13 +106,15 @@ public class Main {
         }
     }
 
-    private static void suchen() {
+    private static void suchen(String[] params) {
         String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
                 "FROM dbsys38.Ferienwohnung, dbsys38.Beinhaltet " +
-                "WHERE Ferienwohnung.NameL = 'Spanien' " +
-                "AND Anzahlzimmer >= 2 " +
-                "AND Beinhaltet.NameF = Ferienwohnung.NameF " +
-                "AND Beinhaltet.Art = 'Sauna'");
+                "WHERE Ferienwohnung.NameL = '%s' " +
+                "AND Anzahlzimmer >= '%s ",params[0],params[1]);
+        if (params.length == 5){
+            query += String.format("AND Beinhaltet.NameF = Ferienwohnung.NameF " +
+                    "AND Beinhaltet.Art = '%s'", params[4]);
+        }
         System.out.println("Debug: " + query);
 
         ResultSet result = null;
@@ -145,6 +147,11 @@ public class Main {
             System.out.println("Buchung wurde der Datenbank erfolgreich hinzugefügt.");
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                conn.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
