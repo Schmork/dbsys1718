@@ -1,3 +1,4 @@
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.io.*;
 import static java.lang.System.exit;
@@ -81,7 +82,6 @@ public class Main {
                 exit(0);
             }
         }
-
     }
 
     private static void query(String[] params, char wahl) {
@@ -148,7 +148,7 @@ public class Main {
         } catch (SQLException e) {
             e.printStackTrace();
             try {
-                conn.rollback();
+                DataBaseController.conn.rollback();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
