@@ -1,6 +1,6 @@
-import javax.xml.crypto.Data;
 import java.sql.*;
 import java.io.*;
+
 import static java.lang.System.exit;
 
 public class Main {
@@ -97,10 +97,15 @@ public class Main {
 
     private static void suchen(String[] params) {
         String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
-                "FROM dbsys38.Ferienwohnung, dbsys38.Beinhaltet " +
-                "WHERE Ferienwohnung.NameL = '%s' " +
-                "AND Anzahlzimmer >= '%s' ",params[0],params[1]);
-        if (params.length == 5){
+
+                "FROM dbsys38.Ferienwohnung");
+        if (params.length == 5) {
+            query += String.format(",dbsys38.Beinhaltet");
+        }
+        query += String.format(" WHERE Ferienwohnung.NameL = '%s' " +
+
+                "AND Anzahlzimmer >= '%s' ", params[0], params[1]);
+        if (params.length == 5) {
             query += String.format("AND Beinhaltet.NameF = Ferienwohnung.NameF " +
                     "AND Beinhaltet.Art = '%s'", params[4]);
         }
