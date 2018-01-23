@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.io.*;
+
 import static java.lang.System.exit;
 
 public class Main {
@@ -20,8 +21,8 @@ public class Main {
             "[email], [Name der Ferienwohnung], [Anreisedatum], [Abreisedatum]";
 
     static String rootMenuText = "Ferien wohnung suchen: s\n" +
-                            "Ferien wohnung buchenMenuText: b\n" +
-                            "Beenden: x\n";
+            "Ferien wohnung buchen: b\n" +
+            "Beenden: x\n";
 
     public static void main(String[] args) throws IOException {
         DataBaseController.init();
@@ -107,13 +108,15 @@ public class Main {
 
     private static void suchen(String[] params) {
         String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
+
                 "FROM dbsys38.Ferienwohnung");
-                if (params.length == 5){
-            query+= String.format(",dbsys38.Beinhaltet");
+        if (params.length == 5) {
+            query += String.format(",dbsys38.Beinhaltet");
         }
-                query += String.format(" WHERE Ferienwohnung.NameL = '%s' " +
-                "AND Anzahlzimmer >= '%s' ",params[0],params[1]);
-        if (params.length == 5){
+        query += String.format(" WHERE Ferienwohnung.NameL = '%s' " +
+
+                "AND Anzahlzimmer >= '%s' ", params[0], params[1]);
+        if (params.length == 5) {
             query += String.format("AND Beinhaltet.NameF = Ferienwohnung.NameF " +
                     "AND Beinhaltet.Art = '%s'", params[4]);
         }
@@ -139,7 +142,6 @@ public class Main {
     }
 
     private static void buchen(String[] params) {
-        maxBN++;
         String query = String.format("insert into dbsys38.buchung(buchungsnr, email, namef, anreisedatum, abreisedatum) " +
                 "values(%d, '%s', '%s', to_date('%s'), to_date('%s'))", getMaxBN() + 1, params[0], params[1], params[2], params[3]);
         System.out.println("debug query: " + query);
