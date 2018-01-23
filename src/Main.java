@@ -5,8 +5,6 @@ import static java.lang.System.exit;
 
 public class Main {
 
-    public static long maxBN = 0;
-
     // for displaying the menu
     static String suchenMenuText = "Hallo! Die Abfrage von Ferienwohnungen muss folgendem Format folgen: \n" +
             "Spanien,3,'1.1.2000','3.3.2000'\n" +
@@ -39,7 +37,6 @@ public class Main {
         String query = String.format("select max(buchungsnr) as max from dbsys38.buchung");
         try {
             ResultSet result = DataBaseController.stmt.executeQuery(query);
-
 
             while (result.next()) {
                 maxBN = result.getString("max");
@@ -97,19 +94,34 @@ public class Main {
 
     private static void suchen(String[] params) {
         String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
-
-                "FROM dbsys38.Ferienwohnung");
-        if (params.length == 5) {
-            query += String.format(",dbsys38.Beinhaltet");
-        }
-        query += String.format(" WHERE Ferienwohnung.NameL = '%s' " +
-
-                "AND Anzahlzimmer >= '%s' ", params[0], params[1]);
-        if (params.length == 5) {
-            query += String.format("AND Beinhaltet.NameF = Ferienwohnung.NameF " +
-                    "AND Beinhaltet.Art = '%s'", params[4]);
-        }
+                "FROM dbsys38.Ferienwohnung ");
+                if (params.length == 5) {
+                    query += String.format(",dbsys38.Beinhaltet");
+                }
+                query += String.format("WHERE Ferienwohnung.NameF IN (SELECT BUCHUNG.NameF FROM dbsys38.Buchung " +
+                        "WHERE Buchung.Anreisedatum NOT BETWEEN TO_DATE(%s) AND TO_DATE(%s) " +
+                        "AND Buchung.Abreisedatum NOT BETWEEN TO_DATE(%s) AND TO_DATE(%s)) " +
+                        "AND Ferienwohnung.NameL = '%s' " +
+                        "AND Anzahlzimmer >= '%s' ", params[2], params[3], params[2], params[3], params[0], params[1]);
+                if (params.length == 5) {
+                    query += String.format("AND Beinhaltet.NameF = Ferienwohnung.NameF " +
+                            "AND Beinhaltet.Art = '%s'", params[4]);
+                }
         System.out.println("Debug: " + query);
+
+/*
+select ferienwohnung.namef, Anzahlzimmer
+from ferienwohnung, beinhaltet
+where ferienwohnung.namef in (select buchung.namef
+      from buchung
+      where buchung.anreisedatum not between to_date('09/01/2018') and to_date('15/01/2018')
+      and buchung.abreisedatum not between to_date('09/01/2018') and to_date('15/01/2018'))
+and ferienwohnung.namel = 'Deutschland'
+and beinhaltet.namef = ferienwohnung.namef
+and beinhaltet.art = 'Sauna'
+and anzahlzimmer >= 1
+
+ */
 
         ResultSet result = null;
         try {
