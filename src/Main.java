@@ -1,17 +1,13 @@
 import java.sql.*;
 import java.io.*;
-
 import static java.lang.System.exit;
 
 public class Main {
-    static String name = "dbsys49";
-    static String passwd = "geheim";
-    static Connection conn = null;
-    static Statement stmt = null;
-    static long maxBN = 0;
+
+    public static long maxBN = 0;
 
     // for displaying the menu
-    static String welcome = "Hallo! Die Abfrage von Ferienwohnungen muss folgendem Format folgen: \n" +
+    static String suchenMenuText = "Hallo! Die Abfrage von Ferienwohnungen muss folgendem Format folgen: \n" +
             "Spanien,3,'1.1.2000','3.3.2000'\n" +
             "[Land],[Anz.Zimmer],[Anreise],[Abreise]\n" +
             "\n" +
@@ -19,15 +15,19 @@ public class Main {
             "Spanien,3,'1.1.2000','3.3.2000',Sauna\n" +
             "[Land],[Anz.Zimmer],[Anreise],[Abreise],[Ausstattung]";
 
-    static String buchen = "Zum Buchen Ihre Daten bitte im folgendem Format eingeben:\n" +
+    static String buchenMenuText = "Zum Buchen Ihre Daten bitte im folgendem Format eingeben:\n" +
             "siegmund.döring@gmx.de,Haus Peter,01/01/1990,01/01/1999\n" +
             "[email], [Name der Ferienwohnung], [Anreisedatum], [Abreisedatum]";
 
+    static String rootMenuText = "Ferien wohnung suchen: s\n" +
+                            "Ferien wohnung buchenMenuText: b\n" +
+                            "Beenden: x\n";
+
     public static void main(String[] args) throws IOException {
-        init();
-        openCon();
+        DataBaseController.init();
+        DataBaseController.openCon();
         loop();
-        closeCon();
+        DataBaseController.closeCon();
     }
 
     private static long getMaxBN() {
@@ -91,7 +91,7 @@ public class Main {
             String query = String.format("select max(buchungsnr) as max from dbsys38.buchung");
             ResultSet result = null;
             try {
-                result = stmt.executeQuery(query);
+                result = DataBaseController.stmt.executeQuery(query);
                 while (result.next()) {
                     String maxbn = result.getString("max");
                     maxBN = Long.parseLong(maxbn);
@@ -113,7 +113,7 @@ public class Main {
 
         ResultSet result = null;
         try {
-            result = stmt.executeQuery(query);
+            result = DataBaseController.stmt.executeQuery(query);
 
             int count = 0;
             while (result.next()) {
@@ -136,8 +136,8 @@ public class Main {
                 "values(%d, '%s', '%s', to_date('%s'), to_date('%s'))", getMaxBN() + 1, params[0], params[1], params[2], params[3]);
         System.out.println("debug query: " + query);
         try {
-            stmt.executeUpdate(query);
-            conn.commit();
+            DataBaseController.stmt.executeUpdate(query);
+            DataBaseController.conn.commit();
             System.out.println("Buchung wurde der Datenbank erfolgreich hinzugefügt.");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -151,60 +151,14 @@ public class Main {
         return input;
     }
 
-    static void init() {
-        try {
-            // Treiber laden
-            Class.forName("oracle.jdbc.driver.OracleDriver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    static void openCon() {
-        try {
-            // String für DB-Connection
-            String url = "jdbc:oracle:thin:@oracle12c.in.htwg-konstanz.de:1521:ora12c";
-            // Verbindung erstellen
-            conn = DriverManager.getConnection(url, name, passwd);
-
-            // Transaction Isolations-Level setzen
-            conn.setTransactionIsolation(conn.TRANSACTION_SERIALIZABLE);
-
-            conn.setAutoCommit(false);
-            stmt = conn.createStatement();
-            stmt.executeUpdate("ALTER SESSION SET nls_date_format = 'DD.MM.YYYY'");
-        } catch (SQLException se) {
-            System.out.println("SQL Exception occurred while establishing connection to DBS: \n"
-                    + se.getMessage());
-            try {
-                conn.rollback();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            exit(-1);
-        }
-    }
-
-    static void closeCon() {
-        try {
-            stmt.close();
-            conn.commit();
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     static char displayMenu() throws IOException {
-        System.out.println("Ferien wohnung suchen: s");
-        System.out.println("Ferien wohnung buchen: b");
-        System.out.println("Beenden: x");
+        System.out.println(rootMenuText);
         String input = getInput();
         if (input.equals("s")) {
-            System.out.println(welcome);
+            System.out.println(suchenMenuText);
             return 's';
         } else if (input.equals("b")) {
-            System.out.println(buchen);
+            System.out.println(buchenMenuText);
             return 'b';
         } else if (input.equals("x")) {
             return 'x';
