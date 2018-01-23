@@ -110,7 +110,7 @@ public class Main {
         String query = String.format("SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
                 "FROM dbsys38.Ferienwohnung, dbsys38.Beinhaltet " +
                 "WHERE Ferienwohnung.NameL = '%s' " +
-                "AND Anzahlzimmer >= '%s ",params[0],params[1]);
+                "AND Anzahlzimmer >= '%s' ",params[0],params[1]);
         if (params.length == 5){
             query += String.format("AND Beinhaltet.NameF = Ferienwohnung.NameF " +
                     "AND Beinhaltet.Art = '%s'", params[4]);
