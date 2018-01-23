@@ -85,8 +85,12 @@ public class Main {
     }
 
     private static void query(String[] params, char wahl) {
-        if (wahl == 's') { suchen();
-        } else if (wahl == 'b') { buchen(params);
+
+        if (wahl == 's') {
+            suchen();
+        } else if (wahl == 'b') {
+            buchen(params);
+
         } else if (wahl == 'n') {
             String query = String.format("select max(buchungsnr) as max from dbsys38.buchung");
             ResultSet result = null;
