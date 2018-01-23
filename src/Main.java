@@ -105,31 +105,16 @@ public class Main {
 
         String query = "SELECT DISTINCT Ferienwohnung.NameF, Anzahlzimmer " +
                         "FROM dbsys38.Ferienwohnung " + fromBeinhaltet;
-        query += String.format("WHERE Ferienwohnung.NameF IN (SELECT BUCHUNG.NameF FROM dbsys38.Buchung " +
-                        "WHERE Buchung.Anreisedatum NOT BETWEEN TO_DATE(%s) AND TO_DATE(%s) " +
-                        "AND Buchung.Abreisedatum NOT BETWEEN TO_DATE(%s) AND TO_DATE(%s)) " +
+        query += String.format("WHERE Ferienwohnung.NameF NOT IN (SELECT BUCHUNG.NameF FROM dbsys38.Buchung " +
+                        "WHERE Buchung.Anreisedatum BETWEEN TO_DATE(%s) AND TO_DATE(%s) " +
+                        "OR Buchung.Abreisedatum BETWEEN TO_DATE(%s) AND TO_DATE(%s)) " +
                         "AND Ferienwohnung.NameL = '%s' " +
                         "AND Anzahlzimmer >= '%s' ", params[2], params[3], params[2], params[3], params[0], params[1]);
         query += checkBeinhaltet;
         System.out.println("Debug: " + query);
 
-/*
-select ferienwohnung.namef, Anzahlzimmer
-from ferienwohnung, beinhaltet
-where ferienwohnung.namef in (select buchung.namef
-      from buchung
-      where buchung.anreisedatum not between to_date('09/01/2018') and to_date('15/01/2018')
-      and buchung.abreisedatum not between to_date('09/01/2018') and to_date('15/01/2018'))
-and ferienwohnung.namel = 'Deutschland'
-and beinhaltet.namef = ferienwohnung.namef
-and beinhaltet.art = 'Sauna'
-and anzahlzimmer >= 1
-
- */
-
-        ResultSet result = null;
         try {
-            result = DataBaseController.stmt.executeQuery(query);
+            ResultSet result = DataBaseController.stmt.executeQuery(query);
 
             int count = 0;
             while (result.next()) {
@@ -147,8 +132,8 @@ and anzahlzimmer >= 1
     }
 
     private static void buchen(String[] params) {
-        String query = String.format("insert into dbsys38.buchung(buchungsnr, email, namef, anreisedatum, abreisedatum) " +
-                "values(%d, '%s', '%s', to_date('%s'), to_date('%s'))", getMaxBN() + 1, params[0], params[1], params[2], params[3]);
+        String query = String.format("insert into dbsys38.buchung(buchungsnr, buchungsdatum, email, namef, anreisedatum, abreisedatum) " +
+                "values(%d, sysdate, '%s', '%s', to_date('%s'), to_date('%s'))", getMaxBN() + 1, params[0], params[1], params[2], params[3]);
         System.out.println("debug query: " + query);
         try {
             DataBaseController.stmt.executeUpdate(query);
