@@ -20,9 +20,9 @@ public class Main {
             "siegmund.döring@gmx.de,Haus Peter,01/01/1990,01/01/1999\n" +
             "[email], [Name der Ferienwohnung], [Anreisedatum], [Abreisedatum]";
 
-    static String rootMenuText = "Ferien wohnung suchen: s\n" +
-                            "Ferien wohnung buchenMenuText: b\n" +
-                            "Beenden: x\n";
+    static String rootMenuText = "Ferienwohnung suchen: s\n" +
+                            "Ferienwohnung buchen: b\n" +
+                            "Programm beenden: x\n";
 
     public static void main(String[] args) throws IOException {
         DataBaseController.init();
@@ -34,7 +34,21 @@ public class Main {
     private static long getMaxBN() {
         String[] dummy = {};
         query(dummy, 'n');
-        return maxBN;
+
+        String maxBN = "";
+        String query = String.format("select max(buchungsnr) as max from dbsys38.buchung");
+        try {
+            ResultSet result = DataBaseController.stmt.executeQuery(query);
+
+
+            while (result.next()) {
+                maxBN = result.getString("max");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return Long.parseLong(maxBN);
     }
 
     private static void loop() throws IOException {
@@ -46,24 +60,12 @@ public class Main {
 
                 String[] split = input.split(",");
 
-                String land = "";
-                String anzzi = "";
-                String anrei = "";
-                String abrei = "";
-                String ausst = "";
-
                 int i = 0;
-                if (split.length > i) land = split[i++];
-                if (split.length > i) anzzi = split[i++];
-                if (split.length > i) anrei = split[i++];
-                if (split.length > i) abrei = split[i++];
-                if (split.length > i) ausst = split[i++];
-
-                System.out.println("Land: " + land);
-                System.out.println("Anzahl Zimmer: " + anzzi);
-                System.out.println("Anreise: " + anrei);
-                System.out.println("Abreise: " + abrei);
-                System.out.println("Ausstattung: " + ausst);
+                if (split.length > i) System.out.println("Land: " + split[i++]);
+                if (split.length > i) System.out.println("Anzahl Zimmer: " + split[i++]);
+                if (split.length > i) System.out.println("Anreise: " + split[i++]);
+                if (split.length > i) System.out.println("Abreise: " + split[i++]);
+                if (split.length > i) System.out.println("Ausstattung: " + split[i++]);
 
                 query(split, 's');
 
@@ -90,19 +92,6 @@ public class Main {
             suchen(params);
         } else if (wahl == 'b') {
             buchen(params);
-
-        } else if (wahl == 'n') {
-            String query = String.format("select max(buchungsnr) as max from dbsys38.buchung");
-            ResultSet result = null;
-            try {
-                result = DataBaseController.stmt.executeQuery(query);
-                while (result.next()) {
-                    String maxbn = result.getString("max");
-                    maxBN = Long.parseLong(maxbn);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -137,7 +126,6 @@ public class Main {
     }
 
     private static void buchen(String[] params) {
-        maxBN++;
         String query = String.format("insert into dbsys38.buchung(buchungsnr, email, namef, anreisedatum, abreisedatum) " +
                 "values(%d, '%s', '%s', to_date('%s'), to_date('%s'))", getMaxBN() + 1, params[0], params[1], params[2], params[3]);
         System.out.println("debug query: " + query);
